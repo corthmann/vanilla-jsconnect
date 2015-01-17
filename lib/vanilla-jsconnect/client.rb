@@ -2,10 +2,27 @@ require 'vanilla-jsconnect/error'
 
 module VanillaJsConnect
   class Client
+    attr_accessor *Configuration::VALID_OPTIONS_KEYS
+
+    def initialize(options = {})
+      merged_options = VanillaJsConnect.options.merge(options)
+
+      Configuration::VALID_OPTIONS_KEYS.each do |key|
+        send("#{key}=", merged_options[key])
+      end
+    end
+
+    def config
+      conf = {}
+      Configuration::VALID_OPTIONS_KEYS.each do |key|
+        conf[key] = send(key)
+      end
+      conf
+    end
 
     # Authenticate JsConnect request and return user object
     # user = { uniqueid: ..., name: ..., photourl: ..., email: ... }
-    def authenticate(user, request)
+    def authenticate(request, user)
       if result = validate_request(request, user)
         result
       elsif has_user(user)
@@ -72,7 +89,7 @@ module VanillaJsConnect
         if index > 0
           sig_str += '&'
         end
-        sig_str += "#{CGI.escape(key)}=#{CGI.escape(data[key])}"
+        sig_str += "#{CGI.escape(key)}=#{CGI.escape(data[key].to_s)}"
       end
 
       data['clientid'] = client_id

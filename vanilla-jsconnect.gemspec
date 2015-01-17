@@ -2,8 +2,8 @@ require File.expand_path('../lib/vanilla-jsconnect/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'vanilla-jsconnect'
-  s.version     = VanilliaJsConnect::VERSION.dup
-  s.date        = '2015-01-13'
+  s.version     = VanillaJsConnect::VERSION.dup
+  s.date        = '2015-01-17'
   s.summary     = ""
   s.description = ""
   s.authors     = ["Christian Orthmann"]

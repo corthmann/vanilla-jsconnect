@@ -2,6 +2,16 @@ require 'spec_helper'
 require 'vanilla-jsconnect/client'
 require 'support/vanilla-jsconnect_factory'
 
+def generate_valid_request(instance)
+  timestamp = Time.now.to_i
+  request = {
+      'client_id' => VanillaJsConnectFactory.client_id,
+      'timestamp' => timestamp,
+      'signature' => instance.send(:generate_signature, timestamp )
+  }
+  request
+end
+
 module VanillaJsConnect
   describe VanillaJsConnect::Client do
 
@@ -31,17 +41,75 @@ module VanillaJsConnect
     end
 
     describe '.authenticate' do
-      let(:instance) { described_class.new }
-
       context 'given a valid request' do
-        it 'should return a signed jsconnect response' do
-          timestamp = Time.now.to_i
-          request = {
-              'client_id' => VanillaJsConnectFactory.client_id,
-              'timestamp' => timestamp,
-              'signature' => instance.send(:generate_signature, timestamp )
-          }
-          expect(instance.authenticate(request, VanillaJsConnectFactory.user)).to be
+        context 'and using SHA1 as hashing method' do
+          let(:instance) { described_class.new }
+
+          it 'should return a signed jsconnect response' do
+            request = generate_valid_request(instance)
+            expect(instance.authenticate(request, VanillaJsConnectFactory.user)).to be
+          end
+        end
+
+        context 'and using MD5 as hashing method' do
+          let(:instance) { described_class.new( { hash_method: :md5 } ) }
+
+          it 'should return a signed jsconnect response' do
+            request = generate_valid_request(instance)
+            expect(instance.authenticate(request, VanillaJsConnectFactory.user)).to be
+          end
+        end
+
+        context 'and using an unsupported hashing method' do
+          let(:instance) { described_class.new( { hash_method: :sha2 } ) }
+
+          it 'raises a configuration error' do
+            request = generate_valid_request(described_class.new)
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(VanillaJsConnect::Error)
+          end
+        end
+      end
+
+      context 'given an invalid request' do
+        context 'which is missing a client id' do
+          it 'raises an invalid request error' do
+            instance = described_class.new
+            request = generate_valid_request(instance)
+            request.delete('client_id')
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(InvalidRequest)
+          end
+        end
+
+        context 'which contains an invalid client id' do
+          it 'raises an invalid client error' do
+            instance = described_class.new
+            request = generate_valid_request(instance)
+            request['client_id'] = 5432167890
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(InvalidClient)
+          end
+        end
+
+        context 'which is missing a timestamp' do
+          it 'raises an invalid request error' do
+            instance = described_class.new
+            request = generate_valid_request(instance)
+            request.delete('timestamp')
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(InvalidRequest)
+          end
+        end
+
+        context 'which is missing a signature' do
+          it 'raises an invalid request error' do
+            instance = described_class.new
+            request = generate_valid_request(instance)
+            request.delete('signature')
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(InvalidRequest)
+          end
         end
       end
     end

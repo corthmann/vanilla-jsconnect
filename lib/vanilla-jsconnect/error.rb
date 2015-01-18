@@ -11,8 +11,8 @@ module VanillaJsConnect
       "#<VanillaJsConnect::Error: VanillaJsConnect::Error code=\"#{@code}\" message=\"#{@message}\">"
     end
 
-    def as_json
-      { code: @code, message: @message }
+    def to_json
+      { code: @code, message: @message }.to_json
     end
   end
 

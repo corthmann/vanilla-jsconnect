@@ -22,7 +22,7 @@ module VanillaJsConnect
 
     # Authenticate JsConnect request and return user object
     # user = { uniqueid: ..., name: ..., photourl: ..., email: ... }
-    def authenticate(request, user)
+    def authenticate(request, user = {})
       if result = validate_request(request, user)
         result
       elsif has_user(user)
@@ -38,7 +38,7 @@ module VanillaJsConnect
     end
 
     def user_stub_response(user_name = '', photourl = '')
-      { name: user_name , photourl: photourl }
+      { 'name' => user_name , 'photourl' => photourl }
     end
 
     def validate_request(request, user)

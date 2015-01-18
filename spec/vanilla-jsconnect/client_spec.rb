@@ -69,6 +69,45 @@ module VanillaJsConnect
                 to raise_error(VanillaJsConnect::Error)
           end
         end
+
+        context 'without a timestamp and signature' do
+          let(:instance) { described_class.new }
+
+          context 'and given a user' do
+            it 'returns an unsigned user stub response' do
+              request = generate_valid_request(instance)
+              request.delete('timestamp')
+              request.delete('signature')
+              response = instance.authenticate(request, VanillaJsConnectFactory.user)
+              expect(response.keys.size).to eql(2)
+              expect(response['name']).to be
+              expect(response['photourl']).to be
+            end
+          end
+
+          context 'and not given a user' do
+            it 'returns an empty unsiged user stub response' do
+              request = generate_valid_request(instance)
+              request.delete('timestamp')
+              request.delete('signature')
+              response = instance.authenticate(request)
+              expect(response.keys.size).to eql(2)
+              expect(response['name']).to eql('')
+              expect(response['photourl']).to eql('')
+            end
+          end
+        end
+
+        context 'and not given a user' do
+          let(:instance) { described_class.new }
+
+          it 'returns an empty unsiged user stub response' do
+            response = instance.authenticate(generate_valid_request(instance))
+            expect(response.keys.size).to eql(2)
+            expect(response['name']).to eql('')
+            expect(response['photourl']).to eql('')
+          end
+        end
       end
 
       context 'given an invalid request' do
@@ -130,7 +169,6 @@ module VanillaJsConnect
                 to raise_error(AccessDenied)
           end
         end
-
       end
     end
   end

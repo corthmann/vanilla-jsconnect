@@ -102,6 +102,16 @@ module VanillaJsConnect
           end
         end
 
+        context 'which contains an invalid timestamp' do
+          it 'raises an access denied error' do
+            instance = described_class.new
+            request = generate_valid_request(instance)
+            request['timestamp'] = Time.now - 60*31
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(InvalidRequest)
+          end
+        end
+
         context 'which is missing a signature' do
           it 'raises an invalid request error' do
             instance = described_class.new
@@ -111,6 +121,16 @@ module VanillaJsConnect
                 to raise_error(InvalidRequest)
           end
         end
+
+        context 'which contains an invalid signature' do
+          it 'raises an access denied error' do
+            instance = described_class.new
+            request = generate_valid_request(described_class.new( { secret: 'dunno' } ))
+            expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
+                to raise_error(AccessDenied)
+          end
+        end
+
       end
     end
   end

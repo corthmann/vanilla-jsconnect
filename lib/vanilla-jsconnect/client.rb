@@ -42,29 +42,43 @@ module VanillaJsConnect
     end
 
     def validate_request(request, user)
-      timestamp = request['timestamp'].to_i
-      current_timestamp = Time.now.to_i
+      request_timestamp = (request['timestamp'].nil? ? nil : request['timestamp'].to_i)
 
-      # Make sure the request coming in is signed properly
-      if !request['client_id']
-        raise VanillaJsConnect::InvalidRequest.new('The client_id parameter is missing.')
-      elsif request['client_id'] != client_id
-        raise VanillaJsConnect::InvalidClient.new("Unknown client #{request['client_id']}.")
-      elsif request['timestamp'].nil? && request['signature'].nil?
+      validate_client(request['client_id'])
+      if request_timestamp.nil? && request['signature'].nil?
         if has_user(user)
           user_stub_response(user['name'], user['photourl'])
         else
           user_stub_response
         end
-      elsif request['timestamp'].nil?
+      else
+        validate_timestamp(request_timestamp)
+        validate_signature(request['signature'], request_timestamp)
+      end
+    end
+
+    def validate_client(request_client_id)
+      if !request_client_id
+        raise VanillaJsConnect::InvalidRequest.new('The client_id parameter is missing.')
+      elsif request_client_id != client_id
+        raise VanillaJsConnect::InvalidClient.new("Unknown client #{request_client_id}.")
+      end
+    end
+
+    def validate_timestamp(request_timestamp)
+      if request_timestamp.nil?
         raise VanillaJsConnect::InvalidRequest.new('The timestamp is missing or invalid.')
-      elsif !request['signature']
-        raise VanillaJsConnect::InvalidRequest.new('The signature is missing.')
-      elsif (current_timestamp - timestamp).abs > 30 * 60
+      elsif (Time.now.to_i - request_timestamp).abs > 30 * 60
         raise VanillaJsConnect::InvalidRequest.new('The timestamp is invalid.')
+      end
+    end
+
+    def validate_signature(request_signature, request_timestamp)
+      if !request_signature
+        raise VanillaJsConnect::InvalidRequest.new('The signature is missing.')
       else
         # Make sure the timestamp's signature checks out.
-        if generate_signature(timestamp) != request['signature']
+        if generate_signature(request_timestamp) != request_signature
           raise VanillaJsConnect::AccessDenied.new('Signature invalid.')
         end
       end

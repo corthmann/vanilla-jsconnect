@@ -1,3 +1,4 @@
+require 'openssl'
 require 'vanilla-jsconnect/error'
 
 module VanillaJsConnect
@@ -21,7 +22,7 @@ module VanillaJsConnect
     end
 
     # Authenticate JsConnect request and return user object
-    # user = { uniqueid: ..., name: ..., photourl: ..., email: ... }
+    # user = { 'uniqueid' => ..., 'name' =>  ..., 'photourl' => ..., 'email' => ... }
     def authenticate(request, user = {})
       if result = validate_request(request, user)
         result
@@ -85,14 +86,7 @@ module VanillaJsConnect
     end
 
     def generate_signature(text)
-      case hash_method
-        when :md5
-          Digest::MD5.hexdigest(text.to_s + secret)
-        when :sha1
-          Digest::SHA1.hexdigest(text.to_s + secret)
-        else
-          raise VanillaJsConnect::Error.new('configuration_error', 'Invalid hash method configuration')
-      end
+      OpenSSL::Digest.new("#{hash_method}").hexdigest(text.to_s + secret)
     end
 
     def sign_js_connect(data)

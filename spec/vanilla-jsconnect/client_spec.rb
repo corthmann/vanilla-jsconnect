@@ -61,12 +61,12 @@ module VanillaJsConnect
         end
 
         context 'and using an unsupported hashing method' do
-          let(:instance) { described_class.new( { hash_method: :sha2 } ) }
+          let(:instance) { described_class.new( { hash_method: :abc } ) }
 
-          it 'raises a configuration error' do
+          it 'raises an error' do
             request = generate_valid_request(described_class.new)
             expect { instance.authenticate(request, VanillaJsConnectFactory.user) }.
-                to raise_error(VanillaJsConnect::Error)
+                to raise_error(RuntimeError, /Unsupported digest algorithm/)
           end
         end
 

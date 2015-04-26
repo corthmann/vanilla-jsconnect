@@ -1,3 +1,4 @@
+require 'cgi'
 require 'openssl'
 require 'vanilla-jsconnect/error'
 

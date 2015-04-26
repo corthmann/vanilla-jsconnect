@@ -2,13 +2,18 @@
 [![Code Climate](https://codeclimate.com/github/corthmann/vanilla-jsconnect/badges/gpa.svg)](https://codeclimate.com/github/corthmann/vanilla-jsconnect)
 [![Test Coverage](https://codeclimate.com/github/corthmann/vanilla-jsconnect/badges/coverage.svg)](https://codeclimate.com/github/corthmann/vanilla-jsconnect)
 
-Library to connect Vanilla forums to ruby applications.
-
-This gem is based upon the official documentation and Vanilla JsConnect library which can be found at https://github.com/vanillaforums/jsConnectRuby.
+Ruby client library for Vanilla forums to connect websites with SSO through JsConnect.
 
 Installation
 -------------
-Coming soon...
+You can install this gem by using the following command:
+```
+gem install vanilla-jsconnect
+```
+or by adding the the following line to your Gemfile.
+```
+gem 'vanilla-jsconnect'
+```
 
 Configuration
 -------------
